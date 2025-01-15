@@ -306,12 +306,17 @@ class PerfumeMatcher:
                 logger.warning("No perfumes found matching the filters")
                 return []
 
+            # Normalize to a 0-100 scale
+            min_score = filtered_similarities.min().item()
+            max_score = filtered_similarities.max().item()
+            normalized_similarities = 100 * (filtered_similarities - min_score) / (max_score - min_score)
+
             # Get top recommendations
-            top_values, top_indices = torch.topk(filtered_similarities, min(top_n, len(filtered_similarities)))
+            top_values, top_indices = torch.topk(normalized_similarities, min(top_n, len(normalized_similarities)))
             selected_indices = filtered_indices[top_indices].tolist()
 
             recommendations = []
-            for idx, similarity_score in zip(selected_indices, top_values):
+            for idx, norm_similarity in zip(selected_indices, top_values):
                 perfume = self.perfume_df.iloc[idx]
                 
                 # Calculate confidence score
@@ -323,12 +328,12 @@ class PerfumeMatcher:
                     ] if field and len(field) > 0
                 ) / 3.0
                 
-                confidence_score = (similarity_score.item() * 0.7 + data_completeness * 0.3) * 100
+                confidence_score = (norm_similarity.item() * 0.7 + data_completeness * 0.3)
 
                 recommendations.append(PerfumeRecommendation(
                     brand=perfume['perfume_brand'],
                     name=perfume['perfume_name'],
-                    similarity=float(similarity_score.cpu().numpy()) * 100,
+                    similarity=round(norm_similarity.item(), 2),  # Normalized score
                     mood=perfume['mood_category'],
                     top_notes=perfume['top_notes'],
                     middle_notes=perfume['middle_notes'],
@@ -342,6 +347,7 @@ class PerfumeMatcher:
             logger.info(f"Generated {len(recommendations)} recommendations")
             return recommendations
 
+
         except Exception as e:
             logger.error(f"Error in get_recommendation: {e}")
             return []
@@ -353,8 +359,8 @@ def main():
         
         # Get recommendations
         recommendations = matcher.get_recommendation(
-            "test_image.jpg",
-            top_n=5,
+            "test_image2.jpg",
+            top_n=7,
             gender_filter=None  # Optional filters
         )
         
