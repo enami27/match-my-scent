@@ -131,4 +131,3 @@ Common issues and solutions:
 1. **Image not found**: Ensure the image path is correct and accessible
 2. **No recommendations**: Check if your filters aren't too restrictive
 3. **CUDA errors**: Ensure your GPU drivers are up to date or use CPU mode
-# match-my-scent
