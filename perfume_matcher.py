@@ -359,7 +359,7 @@ def main():
         
         # Get recommendations
         recommendations = matcher.get_recommendation(
-            "test_image2.jpg",
+            "test_image.jpg",
             top_n=7,
             gender_filter=None  # Optional filters
         )
